@@ -1,0 +1,76 @@
+	Virtual Private Network
+allows a trusted network to communnicate to another trusted network (generally over a untrusted network)
+
+trusted networks are those , of which we have control over the network
+
+Virtual Private Tunnel
+A means of forwarding data over network
+tunnel is created with the help of the encapsulation
+
+types of VPN
+site -to- site  between two physical office connected over vpn
+client/dialup - one mobile user connect to the office network over vpn
+
+
+based on configuration / implementation
+ secure - the vpn we configure are the secured vpn
+	 sends encrypted data over the network
+	examples
+	IPsec
+	IPsec whith layer2 tunneling protocol
+	ssl or tls with encryption
+	point to point tunneling protocol
+	microsoft point-to-point encryption
+	microsoft secure socket tunneling protocol
+	
+ trusted - the vpn wich we dont cofigure but we trust them 
+
+	any vpn setup using -
+	raw private circuit (teleco)
+	private ip network circuit
+ 
+   sub types
+
+ layer 2 VPN		Layer 3 VPN
+ ATM circuits		MPLS with BGP
+ frame relay
+
+ hybrid - we trust the vpn but use our encryption method over it
+
+
+basic configuration in server 
+
+apache 
+poenvpn
+server.conf
+	proto udp
+	port 1194
+	dev tun
+	auth none 
+	cioher none 	
+	ifconfig 10.8.0.1 10.8.0.2
+	verb 4
+sudo openvpn --config server.conf
+
+
+basic configuration in client
+client.conf
+	remote 192.168.80.128	-server ip
+	proto udp
+	port 1194
+	dev tun
+	auth none 
+	cioher none 	
+	ifconfig 10.8.0.2 10.8.0.1
+
+
+
+
+
+
+
+
+
+
+
+ 

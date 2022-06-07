@@ -1,0 +1,59 @@
+	HoneyPot - 
+		Types		
+			LOW Interaction - simulates only some parts (service) 
+
+			HIGH Interaction - Provides a real system the attacker can interact with.
+						can be compromised fully.
+
+
+
+
+sudo nano /etc/ssh/sshd_config
+
+	change port to 2222
+
+apt-get install -y
+	git
+	python-virtualenv 
+	libssl-dev
+	libffi-dev
+	build-essential
+	libpython3-dev
+	python3-minimal
+	authbind
+	virtualenv
+
+
+
+
+
+
+
+	sudo adduser --disabled-password cowrie
+	sudo touch /etc/authbind/byport/22
+	sudo chown cowire:cowire /etc/authbind/byport/22
+	sudo chmod 777 /etc/authbin/byport/22
+
+
+
+git  clone http://github.com/cowire/cowire
+virtualenv --python=python3 cowire-envsource cowire-env/bin/activate
+pip install --upgrade pip
+pip install --upgrade -r requirements.txt
+cp etc/cowrie.cfg.dist etc/cowire.cfg
+nano ect/cowire.cfg
+
+nano etc/userdb.txt
+	root:x:!123456
+	root:x:*
+
+bin/cowire start
+
+
+ssh -o UserKnownHostFile=/dev/null -o StrictHostKeyChecking=no rrot@192.168.80.128
+
+
+
+
+OAuth - is used for authorization
+OPenID Connect - is used for Authentication

@@ -1,0 +1,271 @@
+Infrastructure Monitoring - to monito the health of the infrastructure to avoid the future downtime
+			    by taking proactive measures through monitoring
+
+
+
+NagiOs
+	NagiOs Core (NagiOS) is use to monitors systems, networks and infrastructure.
+
+NagiOS Plugins 
+	 are standalone extensions to Nagios Core that make it possible to monitor anything and everything with Core
+
+	
+	storage	process	memory
+		^
+		|
+		^
+       	 NagiOS Plugins
+		^
+		|
+		^
+	  NagiOS Core
+		^
+		|
+		^
+ 	      Apache
+
+__________________________________________________________________________________________________________
+
+
+Steps- For installation 
+__________________________________________________________________________________________________________
+-Change Hostname
+__________________________________________________________________________________________________________
+-Static Ip
+__________________________________________________________________________________________________________
+-Correct Time        //dpkg-reconfigure tzdata
+__________________________________________________________________________________________________________
+-Instal dependencies
+apache2 apache2-utils autoconf gcc libc6 libgd-dev make php python python3 unzip wget
+__________________________________________________________________________________________________________
+
+-download & extract nagiOs 
+	- cd temp , wget the nagios zip file
+__________________________________________________________________________________________________________
+-Compile nagiOS
+	-  sudo ./configure --with-httpd-conf=/etc/apache2/sites-enabled/
+	-  sudo make all
+__________________________________________________________________________________________________________		
+jiggyasu sharma
+
+-create nagiOs User & group  
+		- sudo make install-groups-users 		\\groupadd -r nagios useradd -g nagios nagios	
+		-sudo passwd nagios
+		- sudo usermod -a -G nagios www-data
+__________________________________________________________________________________________________________
+-install binaries
+	- cd /tmp/nagios/ sudo make install 
+
+__________________________________________________________________________________________________________
+-install services/deamons 
+	- /tmp/nagios make install-daemoninit
+
+__________________________________________________________________________________________________________
+-install command mode
+	-/tmp/nagios/ make install-comandmode
+__________________________________________________________________________________________________________
+
+-install configuration file
+	-/tmp/nagios sudo make install-config 		\\default location of nagios is /usr/local/nagios
+
+
+everything is objects in oops , every objects have multiple attributes and actions to perfoms tasks
+__________________________________________________________________________________________________________
+-install apache configuration file
+	-/tmp/nagios/ sudo make install-webconf  //apache file is made in sites-enabled
+	-/tmp/nagios/ sudo a2enmod rewrite
+	-/tmp/nagios/ sudo a2enmod cgi
+__________________________________________________________________________________________________________
+-create nagiosadmin user
+	-/tmp/nagios/ sudo htpasswd -c /usr/local/nagios/etc/htpasswd.users nagiosadmin
+
+__________________________________________________________________________________________________________
+-verify nagiOs configuration - nagios -V configfile
+	-sudo /usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg
+
+__________________________________________________________________________________________________________-start apache 
+	-systemctl restart apache2
+__________________________________________________________________________________________________________-start Nagios 
+	-systemctl start nagios
+__________________________________________________________________________________________________________
+
+
+
+
+Plugins 
+
+
+sudo pat-get install -y automake autotools-dev bc build-essential dc gawk gettext libmcrypt-dev libnet-snmp-perl libssl-dev snmp
+__________________________________________________________________________________________________________
+
+get plugins from the hostested local machine in 
+/tmp/
+extract the zip file by
+/tmp/ sudo tar -xzf plugins.tar
+
+plugins are storted in libexec
+
+__________________________________________________________________________________________________________
+
+run a setup file in tools to get the config file of plugins
+./tools/setup
+__________________________________________________________________________________________________________
+
+/tmp/nagios-plugins/
+sudo ./configure
+sudo make 
+sudo make install
+
+__________________________________________________________________________________________________________
+
+
+install  a nagios plugin in windows7 port no is 5963
+
+__________________________________________________________________________________________________________
+in debian server 
+
+/usr/local/nagios/libexec
+sudo wget http://192.168.1.152/sw/nagios/ceck_ncpa.py
+chmod 777 check_ncpa.py
+
+
+
+
+
+__________________________________________________________________________________________________________
+
+/usr/local/nagios/libexec/ sudo ./check_nop.py -t Password1234 -H 192.168.80.129 -M Memory/virtual 
+
+
+/usr/local/nagios/libexec/ sudo ./check_nop.py -V -t Password1234 -H 192.168.80.129 -M Memory/virtual 
+////////////////////uar/local/nagios/libexec/check_ncpa.py -t Password1234 -H 192.168.80.150 -M system/agent_version
+
+
+
+__________________________________________________________________________________________________________
+any plugin we want to use the definition has to be in nagios command.cfg object
+defining plugin in nagios/usr/local/nagios/etc/objects/command.cfg
+
+
+define command {
+		command_name	check_ncpa
+		command_line	$USER1$/check_ncpa.py -H $HOSTADDRESS$ $ARG1$
+}
+
+__________________________________________________________________________________________________________
+
+/usr/local/nagios/etc/object/templates.cfg    \\comment the host group windows-server
+
+__________________________________________________________________________________________________________
+
+
+
+
+in nagios.cfg file uncomment the /server file 
+
+now we will write a host file for plugin
+
+
+mkdir /usr/local/nagios/etc/servers
+unser that add a file win_7.cfg 
+
+/usr/local/nagios/etc/servers sudo nano win_7.cfg
+	define host {
+	use			windows-server
+	host_name		win_7
+	alias			win 7 sys 1
+	addresss		192.168.80.130
+	max-check_attempts	5
+
+}
+
+	define service {
+	use			generic-service
+	host_name		win_7
+	service_description 	NOPA Agent Version
+	check_command 		check_nopa!-t 'Password1234' -p -P 5693 -M system/agent_version    //-P port number -p pass attribute -M metrics 
+
+}
+
+
+define service {
+use			generic-service
+host_name		win_7
+service_description 	CPU Average
+check_command 		check_nopa!-t 'Password1234' -p -P 5693 -M cpu/percent -w 20 -c 40 -q 'aggregate=avg'    //-w warning @20% useage of cpu 
+															//-c critical@40% useage of cpu	 
+}
+
+__________________________________________________________________________________________________________
+
+
+3 types of installation we can do
+from source code
+from repository /package
+from binary
+
+
+in debian client 
+
+
+apt-get install wget libsqlite3-0 
+
+wget  http://192.168.1.152/sw/nagios/*.deb
+
+to install
+
+sudo dpkg -i package_name
+
+sudo nano /usr/local/ncpa/etc/ncpa.cfg 	//change to token to our token 'Password1234'
+
+to check the client agent is working
+/uar/local/nagios/libexec/check_ncpa.py -t Password1234 -H 192.168.80.150 -M system/agent_version
+
+__________________________________________________________________________________________________________
+
+
+in nagios server
+
+/usr/local/nagios/etc/servers sudo nano deb10.cfg
+
+	define host {
+	use			linux_server
+	host_name		deb10
+	alias			deb10 sys 1
+	addresss		192.168.80.130
+	max-check_attempts	5
+
+}
+
+	define service {
+	use			generic-service
+	host_name		deb10
+	service_description 	Agent Version
+	check_command 		check_nopa!-t 'Password1234' -p -P 5693 -M system/agent_version    //-P port number -p pass attribute -M metrics 
+19:20 29-05-20220
+}
+
+
+define service {
+use			generic-service
+host_name		win_7
+service_description 	Virtual memory
+check_command 		check_nopa!-t 'Password1234' -p -P 5693 -M memory/virtual -w 50 -c 80 -u G   \\add
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
