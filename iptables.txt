@@ -1,0 +1,126 @@
+Firewall - iptables:
+
+# List out iptables rules in detail
+-> sudo iptables  -v -L
+
+# Flush Existing Rules
+-> sudo iptables -F
+
+# Default INPUT , OUTPUT, FORWARD  
+-> sudo iptables -P INPUT DROP
+-> sudo iptables -P INPUT ACCEPT
+-> sudo iptables -P INPUT DROP
+
+# Accept only Incoming Traffic (loopback interface)
+-> sudo iptables -A INPUT -i lo -j ACCEPT
+-> sudo iptables -v -L INPUT 
+
+#Accept only ESTABLISHED State
+-> sudo iptables -A INPUT -m state --state ESTABLISHED -j ACCEPT
+
+# Accpet only ssh
+-> sudo iptables -A INPUT -p tcp --dport ssh -j ACCEPT
+
+# Allow http traffic
+-> sudo iptables -A INPUT -p tcp --dport http -j ACCEPT
+
+# Allow specific ip to ssh
+-> sudo iptables -A INPUT -p tcp --dport ssh -s [ip_address] -j ACCEPT
+
+# To remove Rule from iptables
+-> sudo iptables -L --line-number
+-> sudo iptables -D INPUT [line_number]
+
+# To add multiple port number with the range defined
+-> sudo iptables -A INPUT -p tcp --dport 22:25 -s [‬ip_address] -j ACCEPT
+
+# To allow multiple ip address from INPUT Trafiic (By giving range)
+-> sudo iptables -A INPUT -m iprange --src-range 192.168.20.10 - 192.168.20.30 -j ACCEPT
+
+# To Enable IP Forwading 
+-> sudo nano /proc/sys/net/ipv4/ip_forward 
+     [ Default value is 0, Make it 1 ]
+
+NAT(Network Address Translation) - SNAT /  DNAT:
+=========================================
+
+# List out iptables rules for NAT
+-> sudo iptables -t nat -L
+
+# POSTROUTING with MASQUERADE 
+-> sudo iptables -t nat -A POSTROUTING -o ens37 -j s
+
+PAT (Port Address Translation) - Port Forwarding:
+========================================
+
+# Port Forwarding 
+-> sudo iptables -t nat -A PREROUTING -p tcp --port 4444 -j REDIRECT --to-port 80
+
+# To flush NAT Rules
+-> sudo iptablels -t nat -F
+
+# Port Forwarding Task 1:
+=================== 
+-> nano fw.sh
+-> #!/bin/bash
+-> iptables -F
+-> iptables -t -F
+-> sudo iptables -t PREROUTING -p tcp --dport 8080 -j DNAT --to-destination [destination_ip]:80
+-> sudo iptables -t POSTROUTING -p tcp -d [destination ip] --dport 80 -j SNAT --to-source [source ip]  
+-> iptables -t nat -v -L
+--------------------------------------------------------------------------------------------------------------------------------------
+
+# Block Apache server ip Task 2:
+==========================
+
+#!/bin/bash
+
+echo 1 > '/proc/sys/net/ipv4/ip_forward'
+sudo iptables -F
+
+sudo iptables -P INPUT DROP 
+sudo iptables -P OUTPUT DROP 
+sudo iptables -P FORWARD DROP 
+ 
+sudo iptables -A INPUT -p tcp --dport  http -s [server_ip] -j ACCEPT
+
+Browse:
+http://[server_ip]:8001 (Apache Page Seen)
+http://[apache_server_ip] (Apache Page not Seen)
+ 
+--------------------------------------------------------------------------------------------------------------------------------------
+# LAN To WAN & WAN to LAN:
+-> nano fw.sh
+#!/bin/bash
+
+# Flush Existing Rules
+sudo ipatables -F
+
+# Flush Existing NAT Rules
+sudo iptables -t nat -F 
+
+# Allow only putty connection
+sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+sudo iptables -A OUTPUT -p tcp --dport 22 -j ACCEPT
+
+# DROP INPUT, OUTPUT, FORWARING
+sudo iptables -P INPUT DROP
+sudo iptables -P OUTPUT DROP
+sudo iptables -P FORWARD DROP
+
+# Allow traffic for loopback interface 
+sudo iptables -A INPUT -i lo -j ACCEPT 
+
+# forward the traffic coming from LAN to WAN 
+sudo iptables -A FORWARD -i ens33 -o ens37 -j ACCEPT
+
+# Allow all traffic coming from WAN to LAN whose state is established
+sudo iptables -A FORWARD -i ens37 -o ens33 -m state --state ESTABLISHED -j ACCEPT
+
+# configure source ip
+sudo iptables -t nat -A POSTROUTING  -o ens37 -j MASQUERADE
+
+sudo iptables -v -L
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+
